@@ -22,7 +22,7 @@ from Prefs import *
 
 import maya.OpenMaya as OpenMaya
 
-from LookStandin import Standin
+from LookStandin import LookStandin
 
 # ######################################################################################################################
 
@@ -206,19 +206,19 @@ class LookLoader(QDialog):
             for sel in selection:
                 if pm.objectType(sel, isType="aiStandIn"):
                     # Standin found
-                    standins.append(Standin(sel))
+                    standins.append(LookStandin(sel))
                 elif pm.objectType(sel, isType="transform"):
                     prt = sel.getParent()
                     if prt is not None and pm.objectType(prt, isType="transform"):
                         shape = prt.getShape()
                         if shape is not None and pm.objectType(shape, isType="aiStandIn"):
                             # Proxy of Standin found
-                            standins.append(Standin(shape))
+                            standins.append(LookStandin(shape))
 
                 for rel in pm.listRelatives(sel, allDescendents=True, type="aiStandIn"):
-                    standins.append(Standin(rel))
+                    standins.append(LookStandin(rel))
         else:
-            standins = [Standin(standin) for standin in pm.ls(type="aiStandIn")]
+            standins = [LookStandin(standin) for standin in pm.ls(type="aiStandIn")]
 
         for standin in standins:
             if standin.is_valid():

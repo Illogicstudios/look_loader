@@ -4,7 +4,7 @@ import pymel.core as pm
 from utils import *
 
 
-class Standin:
+class LookStandin:
     def __init__(self, standin):
         self.__standin = standin
         self.__standin_name = ""
