@@ -3,13 +3,13 @@ import importlib
 
 if __name__ == '__main__':
     # TODO specify the right path
-    install_dir = 'PATH/TO/template'
+    install_dir = 'PATH/TO/look_loader'
     if not sys.path.__contains__(install_dir):
         sys.path.append(install_dir)
 
-    # TODO import right modules
     modules = [
-        "MayaTool"
+        "LookStandin",
+        "LookLoader"
     ]
 
     from utils import *
@@ -18,13 +18,11 @@ if __name__ == '__main__':
     for module in modules:
         importlib.import_module(module)
 
-    # TODO import the app
-    from MayaTool import *
+    from LookLoader import *
 
-    # TODO rename app variable and Class
     try:
-        app.close()
+        look_loader.close()
     except:
         pass
-    app = MayaTool()
-    app.show()
+    look_loader = LookLoader()
+    look_loader.show()
