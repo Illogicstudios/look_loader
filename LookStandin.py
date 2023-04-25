@@ -105,7 +105,7 @@ class LookStandin:
                     if not look_data[1]:
                         not_plugged_looks_filepath.append((look_name, look_filepath))
 
-        index = len(pm.listConnections(self.__standin, type="aiIncludeGraph"))
+        index = len(self.__standin.operators.get())
         for name_look, filepath_look in not_plugged_looks_filepath:
             include_graph = pm.createNode("aiIncludeGraph", n="aiIncludeGraph_" + name_look)
             include_graph.filename.set(filepath_look)
