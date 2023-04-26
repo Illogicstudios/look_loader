@@ -5,6 +5,14 @@ from utils import *
 
 
 class LookStandin:
+    @staticmethod
+    def __get_free_operator_slot(standin):
+        index = 0
+        while True:
+            if pm.getAttr(standin + ".operators[" + str(index) + "]") is None:
+                return index
+            index += 1
+
     def __init__(self, standin):
         self.__standin = standin
         self.__standin_name = ""
@@ -111,16 +119,8 @@ class LookStandin:
                         not_plugged_looks_filepath.append((look_name, look_filepath))
 
         # Append to the end of operators all the looks
-        nb_operators = len(self.__standin.operators.get())
-        index = 0
-        operators_flagged = 0
-        while operators_flagged < nb_operators:
-            if pm.getAttr(self.__standin+".operators["+str(index)+"]") is not None:
-                operators_flagged+=1
-            index+=1
         for name_look, filepath_look in not_plugged_looks_filepath:
             include_graph = pm.createNode("aiIncludeGraph", n="aiIncludeGraph_" + name_look)
             include_graph.filename.set(filepath_look)
-            include_graph.out >> self.__standin.operators[index]
-            index += 1
+            include_graph.out >> self.__standin.operators[LookStandin.__get_free_operator_slot(self.__standin)]
         pm.select(clear=True)
