@@ -1,6 +1,6 @@
-# Template Tool
+# Look Loader
 
-> Template is a tool to ...
+> Look Loader is a tool to add looks to a StandIn
 
 ## How to install
 
@@ -11,34 +11,34 @@ You must specify the correct path of the installation folder in the ```template_
 ```python
 if __name__ == '__main__':
     # TODO specify the right path
-    install_dir = 'PATH/TO/template_tool'
+    install_dir = 'PATH/TO/look_loader'
     # [...]
 ```
 
 ---
 
-## Features
-
-### First Part
+### Visualization
 
 <div align="center">
   <span>
-    <img src="https://user-images.githubusercontent.com/94440879/216031775-d9ea680f-9a91-4f19-bc4c-6dd7fae4aa6b.png" width=50%>
+    <img src="https://user-images.githubusercontent.com/117286626/234493464-603be046-bf78-4b4b-8aa5-961371baec29.png" width=70%>
   </span>
-  <p weight="bold">Caption</p>
+  <p weight="bold">There is a table see the StandIn that have looks</p>
   <br/>
 </div>
 
-[...]
+There is a table see the StandIn that have looks
 
-### Second Part
+### Add Looks to StandIn
 
 <div align="center">
   <span>
-    <img src="https://user-images.githubusercontent.com/94440879/216031775-d9ea680f-9a91-4f19-bc4c-6dd7fae4aa6b.png" width=50%>
+    <img src="https://user-images.githubusercontent.com/117286626/234493728-7499a7b8-7b06-4c5f-a384-712ca330b6a8.png" width=49%>
   </span>
-  <p weight="bold">Caption</p>
+  <span>
+    <img src="https://user-images.githubusercontent.com/117286626/234493805-5e2eb5ae-f452-4b41-891b-4d424f19ed27.png" width=49%>
+  </span>
   <br/>
 </div>
 
-[...]
+Looks can be added to a Standin by selecting it and pressing the button Add Looks to StandIn
