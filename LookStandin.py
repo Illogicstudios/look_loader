@@ -114,7 +114,7 @@ class LookStandin:
         nb_operators = len(self.__standin.operators.get())
         index = 0
         operators_flagged = 0
-        while operators_flagged < nb_operators and index<10:
+        while operators_flagged < nb_operators:
             if pm.getAttr(self.__standin+".operators["+str(index)+"]") is not None:
                 operators_flagged+=1
             index+=1
