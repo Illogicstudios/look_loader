@@ -92,9 +92,8 @@ class LookLoader(QDialog):
 
     def showEvent(self, arg__1: QShowEvent) -> None:
         self.__selection_callback = \
-            OpenMaya.MEventMessage.addEventCallback("SelectionChanged", self.__scene_selection_changed)
+            OpenMaya.MEventMessage.addEventCallback("SelectionChanged", self.__on_scene_selection_changed)
 
-    # Remove callbacks
     def hideEvent(self, arg__1: QCloseEvent) -> None:
         OpenMaya.MMessage.removeCallback(self.__selection_callback)
         self.__save_prefs()
@@ -122,6 +121,7 @@ class LookLoader(QDialog):
         grid_layout.addWidget(QLabel("Standins"), 0, 0, alignment=Qt.AlignCenter)
         grid_layout.addWidget(QLabel("Looks"), 0, 1, alignment=Qt.AlignCenter)
 
+        # Standin Table
         self.__ui_standin_table = QTableWidget(0, 3)
         self.__ui_standin_table.setHorizontalHeaderLabels(["Name", "Standin Name", "Number looks"])
         self.__ui_standin_table.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
@@ -133,6 +133,7 @@ class LookLoader(QDialog):
         self.__ui_standin_table.itemSelectionChanged.connect(self.__on_standin_select_changed)
         grid_layout.addWidget(self.__ui_standin_table, 1, 0)
 
+        # List of Looks
         self.__ui_looks_list = QListWidget()
         self.__ui_looks_list.setSpacing(2)
         self.__ui_looks_list.setStyleSheet("font-size:14px")
@@ -140,8 +141,9 @@ class LookLoader(QDialog):
         self.__ui_looks_list.itemSelectionChanged.connect(self.__on_look_selected_changed)
         grid_layout.addWidget(self.__ui_looks_list, 1, 1)
 
+        # Button
         self.__ui_add_looks_to_standin_btn = QPushButton("Add Looks to the StandIn")
-        self.__ui_add_looks_to_standin_btn.clicked.connect(self.__on_add_look_to_standin)
+        self.__ui_add_looks_to_standin_btn.clicked.connect(self.__on_add_looks_to_standin)
         main_lyt.addWidget(self.__ui_add_looks_to_standin_btn)
 
     # Refresh the ui according to the model attribute
@@ -149,10 +151,12 @@ class LookLoader(QDialog):
         self.__refresh_standin_table()
         self.__refresh_btn()
 
+    # Refresh the buttons
     def __refresh_btn(self):
         self.__ui_add_looks_to_standin_btn.setEnabled(self.__standin_obj_selected is not None and
                                                       len(self.__file_looks_selected)>0)
 
+    # Refresh the standin table
     def __refresh_standin_table(self):
         refresh_selection = self.__refresh_selection
         self.__refresh_selection = False
@@ -197,7 +201,8 @@ class LookLoader(QDialog):
                 if look_data[1]:
                     look_list_widget.setTextColor(QColor(0, 255, 255).rgba())
 
-    # Retrieve the standins
+    # Retrieve the standins : all valid standin if selection is None
+    # or all valid standins within selection
     def __retrieve_standins(self):
         self.__standins.clear()
         standins = []
@@ -225,12 +230,14 @@ class LookLoader(QDialog):
                 self.__standins[standin.get_object_name()] = standin
         self.__standins = dict(sorted(self.__standins.items()))
 
-    def __scene_selection_changed(self, *args, **kwargs):
+    # On scene selection changed
+    def __on_scene_selection_changed(self, *args, **kwargs):
         if self.__refresh_selection:
             self.__retrieve_standins()
             self.__refresh_standin_table()
             self.__on_standin_select_changed()
 
+    # On standin selected changed in standin table
     def __on_standin_select_changed(self):
         if self.__refresh_selection:
             rows_selected = self.__ui_standin_table.selectionModel().selectedRows()
@@ -242,6 +249,8 @@ class LookLoader(QDialog):
             self.__refresh_looks_list()
             self.__refresh_btn()
 
+
+    # On Look selected changed in Look list
     def __on_look_selected_changed(self):
         self.__file_looks_selected.clear()
         selected_items = self.__ui_looks_list.selectedItems()
@@ -249,7 +258,8 @@ class LookLoader(QDialog):
             self.__file_looks_selected.append(item.data(Qt.UserRole))
         self.__refresh_btn()
 
-    def __on_add_look_to_standin(self):
+    # Add selected looks to selected standin
+    def __on_add_looks_to_standin(self):
         self.__refresh_selection = False
         self.__standin_obj_selected.add_looks(self.__file_looks_selected)
         self.__standin_obj_selected.retrieve_looks()

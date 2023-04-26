@@ -22,6 +22,7 @@ class LookStandin:
         standin_file_name = os.path.splitext(standin_file_name_ext)[0]
         self.__standin_name = re.sub("_" + standin_file_name.split('_')[-1], '', standin_file_name)
 
+        # Retrieve the looks
         self.__valid = self.retrieve_looks()
 
     def retrieve_looks(self):
@@ -37,7 +38,7 @@ class LookStandin:
         plugged_looks = [include_graph.filename.get().replace("\\", "/")
                          for include_graph in pm.listConnections(self.__standin, type="aiIncludeGraph")]
 
-        # DEFAULT LOOK
+        # Find default look
         look_default = ""
         for f in reversed(os.listdir(looks_main_dir)):
             filepath = os.path.join(looks_main_dir, f).replace("\\", "/")
@@ -45,9 +46,11 @@ class LookStandin:
             if os.path.isfile(filepath) and match:
                 look_default = filepath
                 break
+        # If default is not found then stop the function (valid is False)
         if look_default is None:
             return False
 
+        # Find sublooks within the look folder
         sublooks_dir = os.path.join(looks_main_dir, "look")
         if os.path.isdir(sublooks_dir):
             for sublook_dir in os.listdir(sublooks_dir):
@@ -64,7 +67,7 @@ class LookStandin:
 
         self.__looks["default"] = (look_default, look_default in plugged_looks)
 
-        # OVERRIDE LOOK
+        # Find the Override Look
         for f in os.listdir(looks_main_dir):
             filepath = os.path.join(looks_main_dir, f).replace("\\", "/")
             match = re.match(r"^" + self.__standin_name + r"_override\.ass$", f)
@@ -85,19 +88,21 @@ class LookStandin:
     def get_standin_name(self):
         return self.__standin_name
 
-    # Getter of standin name
+    # Getter ofthe  standin
     def get_standin(self):
         return self.__standin
 
-    # Getter of standin name
+    # Getter of the looks
     def get_looks(self):
         return self.__looks
 
-    # Getter of standin name
+    # Getter of whether the standin object is valid
     def is_valid(self):
         return self.__valid
 
+    # Add Looks to the operators
     def add_looks(self, filepath_looks):
+        # Find the inexistent looks
         not_plugged_looks_filepath = []
         for look_filepath in filepath_looks:
             for look_name, look_data in self.__looks.items():
@@ -105,7 +110,14 @@ class LookStandin:
                     if not look_data[1]:
                         not_plugged_looks_filepath.append((look_name, look_filepath))
 
-        index = len(self.__standin.operators.get())
+        # Append to the end of operators all the looks
+        nb_operators = len(self.__standin.operators.get())
+        index = 0
+        operators_flagged = 0
+        while operators_flagged < nb_operators and index<10:
+            if pm.getAttr(self.__standin+".operators["+str(index)+"]") is not None:
+                operators_flagged+=1
+            index+=1
         for name_look, filepath_look in not_plugged_looks_filepath:
             include_graph = pm.createNode("aiIncludeGraph", n="aiIncludeGraph_" + name_look)
             include_graph.filename.set(filepath_look)
