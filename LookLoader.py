@@ -22,7 +22,7 @@ from common.Prefs import *
 
 import maya.OpenMaya as OpenMaya
 
-from .LookStandin import LookStandin
+from .LookStandin import LookStandin, LookPresentState
 
 # ######################################################################################################################
 
@@ -198,8 +198,10 @@ class LookLoader(QDialog):
                 look_list_widget = QListWidgetItem(look_name)
                 look_list_widget.setData(Qt.UserRole, look_data[0])
                 self.__ui_looks_list.addItem(look_list_widget)
-                if look_data[1]:
+                if look_data[1] == LookPresentState.AlreadyPlugged:
                     look_list_widget.setTextColor(QColor(0, 255, 255).rgba())
+                elif look_data[1] == LookPresentState.AnteriorVersionPlugged:
+                    look_list_widget.setTextColor(QColor(255, 255, 0).rgba())
 
     # Retrieve the standins : all valid standin if selection is None
     # or all valid standins within selection
