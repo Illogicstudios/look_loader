@@ -1,7 +1,7 @@
 import os
 import re
 import pymel.core as pm
-from utils import *
+from common.utils import *
 
 
 class LookStandin:
