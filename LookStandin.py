@@ -29,7 +29,6 @@ class LookStandin:
 
         # standin name
         standin_file_path = standin.dso.get()
-        print_var(standin_file_path)
         if standin_file_path is None or not re.match(r".*\.abc", standin_file_path):
             return
         standin_file_name_ext = os.path.basename(standin_file_path)
@@ -92,8 +91,8 @@ class LookStandin:
         plugged_looks = {include_graph.filename.get().replace("\\", "/") : include_graph
                          for include_graph in pm.listConnections(self.__standin, type="aiIncludeGraph")}
         for plugged_look_path, plugged_look in plugged_looks.items():
-            match = re.match(r"^(.+)(?:_override|_operator).+$", plugged_look_path)
-            if not match:continue
+            match = re.match(r"^(.+(?:_override|_operator)).+$", plugged_look_path)
+            if not match: continue
             root_look_path = match.group(1)
             for look_name in self.__looks.keys():
                 if self.__looks[look_name][0] == plugged_look_path:
