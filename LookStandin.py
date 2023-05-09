@@ -67,7 +67,11 @@ class LookStandin:
                 sublook_dir_path = os.path.join(sublooks_dir, sublook_dir).replace("\\", "/")
                 if not os.path.isdir(sublook_dir_path):
                     continue
-                sublooks = os.listdir(sublook_dir_path)
+                sublooks = []
+                for sublook in os.listdir(sublook_dir_path):
+                    if re.match(r"^" + self.__standin_name + "_" + sublook_dir + "_operator\.v[0-9]{3}\.ass$", sublook):
+                        sublooks.append(sublook)
+
                 if len(sublooks) == 0:
                     continue
                 sublook_path = os.path.join(sublook_dir_path, sublooks[-1]).replace("\\", "/")
