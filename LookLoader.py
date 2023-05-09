@@ -22,7 +22,8 @@ from common.Prefs import *
 
 import maya.OpenMaya as OpenMaya
 
-from .LookStandin import LookStandin, LookPresentState
+from .LookStandin import LookAsset, LookPresentState
+from .LookFactory import LookFactory
 
 # ######################################################################################################################
 
@@ -48,6 +49,9 @@ class LookLoader(QDialog):
         self.__standin_obj_selected = None
         self.__file_looks_selected = []
         self.__selection_callback = None
+
+        self.__retrieve_current_project_dir()
+        self.__look_factory = LookFactory(self.__current_project_dir)
 
         # UI attributes
         self.__ui_width = 600
@@ -97,6 +101,23 @@ class LookLoader(QDialog):
     def hideEvent(self, arg__1: QCloseEvent) -> None:
         OpenMaya.MMessage.removeCallback(self.__selection_callback)
         self.__save_prefs()
+
+    # Retrieve the current project dir specified in the Illogic maya launcher
+    def __retrieve_current_project_dir(self):
+        self.__current_project_dir = os.getenv("CURRENT_PROJECT_DIR")
+        if self.__current_project_dir is None:
+            self.__error_current_project_dir()
+
+    # Delete the window and show an error message
+    def __error_current_project_dir(self):
+        self.deleteLater()
+        msg = QMessageBox()
+        msg.setWindowTitle("Error current project directory not found")
+        msg.setIcon(QMessageBox.Warning)
+        msg.setText("Current project directory not found")
+        msg.setInformativeText(
+            "Current project directory has not been found. You should use an Illogic Maya Launcher")
+        msg.exec_()
 
     # Create the ui
     def __create_ui(self):
@@ -154,7 +175,7 @@ class LookLoader(QDialog):
     # Refresh the buttons
     def __refresh_btn(self):
         self.__ui_add_looks_to_standin_btn.setEnabled(self.__standin_obj_selected is not None and
-                                                      len(self.__file_looks_selected)>0)
+                                                      len(self.__file_looks_selected) > 0)
 
     # Refresh the standin table
     def __refresh_standin_table(self):
@@ -207,29 +228,30 @@ class LookLoader(QDialog):
     # or all valid standins within selection
     def __retrieve_standins(self):
         self.__standins.clear()
-        standins = []
         selection = pm.ls(selection=True)
         if len(selection) > 0:
             for sel in selection:
                 if pm.objectType(sel, isType="aiStandIn"):
                     # Standin found
-                    standins.append(LookStandin(sel))
+                    look_obj = self.__look_factory.generate(sel)
+                    if look_obj is not None: self.__standins[look_obj.get_object_name()] = look_obj
                 elif pm.objectType(sel, isType="transform"):
                     prt = sel.getParent()
                     if prt is not None and pm.objectType(prt, isType="transform"):
                         shape = prt.getShape()
                         if shape is not None and pm.objectType(shape, isType="aiStandIn"):
                             # Proxy of Standin found
-                            standins.append(LookStandin(shape))
+                            look_obj = self.__look_factory.generate(shape)
+                            if look_obj is not None: self.__standins[look_obj.get_object_name()] = look_obj
 
                 for rel in pm.listRelatives(sel, allDescendents=True, type="aiStandIn"):
-                    standins.append(LookStandin(rel))
+                    look_obj = self.__look_factory.generate(rel)
+                    if look_obj is not None: self.__standins[look_obj.get_object_name()] = look_obj
         else:
-            standins = [LookStandin(standin) for standin in pm.ls(type="aiStandIn")]
+            for standin in pm.ls(type="aiStandIn"):
+                look_obj = self.__look_factory.generate(standin)
+                if look_obj is not None: self.__standins[look_obj.get_object_name()] = look_obj
 
-        for standin in standins:
-            if standin.is_valid():
-                self.__standins[standin.get_object_name()] = standin
         self.__standins = dict(sorted(self.__standins.items()))
 
     # On scene selection changed
@@ -251,7 +273,6 @@ class LookLoader(QDialog):
             self.__refresh_looks_list()
             self.__refresh_btn()
 
-
     # On Look selected changed in Look list
     def __on_look_selected_changed(self):
         self.__file_looks_selected.clear()
@@ -264,7 +285,7 @@ class LookLoader(QDialog):
     def __on_add_looks_to_standin(self):
         self.__refresh_selection = False
         self.__standin_obj_selected.add_looks(self.__file_looks_selected)
-        self.__standin_obj_selected.retrieve_looks()
+        self.__standin_obj_selected.retrieve_looks(self.__current_project_dir)
         self.__refresh_selection = True
         self.__refresh_standin_table()
         self.__refresh_looks_list()
