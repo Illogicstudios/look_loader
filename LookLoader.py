@@ -163,7 +163,7 @@ class LookLoader(QDialog):
         grid_layout.addWidget(self.__ui_looks_list, 1, 1)
 
         # Button
-        self.__ui_add_looks_to_standin_btn = QPushButton("Add Looks to the StandIn")
+        self.__ui_add_looks_to_standin_btn = QPushButton("Set Looks to the StandIn")
         self.__ui_add_looks_to_standin_btn.clicked.connect(self.__on_add_looks_to_standin)
         main_lyt.addWidget(self.__ui_add_looks_to_standin_btn)
 
