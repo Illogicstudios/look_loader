@@ -23,10 +23,11 @@ class LookStandin(ABC):
 
     def __init__(self, standin, standin_name, object_name):
         self.__object_name = object_name
-        self._valid = False
+        self._valid = True
         self._standin = standin
         self._standin_name = standin_name
         self._looks = {}
+        self._uvs = []
 
     # Getter of object name
     def get_object_name(self):
@@ -60,7 +61,7 @@ class LookStandin(ABC):
                         include_graph.filename.set(look_filepath)
                     else:
                         include_graph = pm.createNode("aiIncludeGraph", n="aiIncludeGraph_" +
-                                                                          self.__object_name+"_"+look_name)
+                                                                          self.__object_name + "_" + look_name)
                         include_graph.filename.set(look_filepath)
                         include_graph.out >> self._standin.operators[
                             LookStandin.__get_free_operator_slot(self._standin)]
@@ -75,6 +76,14 @@ class LookStandin(ABC):
                 include_graph = look_data[2]
                 include_graph.filename.set(look_filepath)
         pm.select(clear=True)
+
+    @abstractmethod
+    def is_uv_up_to_date(self):
+        pass
+
+    @abstractmethod
+    def retrieve_uvs(self, current_project_dir):
+        pass
 
     @abstractmethod
     def retrieve_looks(self, current_project_dir):
@@ -137,8 +146,8 @@ class LookStandin(ABC):
         # Determine if the look is used, not used or if a precedent version is used
         plugged_looks = {include_graph.filename.get().replace("\\", "/"): include_graph
                          for include_graph in pm.listConnections(self._standin, type="aiIncludeGraph")}
-        suffix_operator_or_override =\
-            suffix_operator if not check_for_override else "(?:_override|"+suffix_operator+")"
+        suffix_operator_or_override = \
+            suffix_operator if not check_for_override else "(?:_override|" + suffix_operator + ")"
         for plugged_look_path, plugged_look in plugged_looks.items():
             match = re.match(r"^(.+" + suffix_operator_or_override + r").+$", plugged_look_path)
             if not match: continue
@@ -150,14 +159,48 @@ class LookStandin(ABC):
                         self._looks[look_name][1] != LookPresentState.AlreadyPlugged:
                     self._looks[look_name][1] = LookPresentState.AnteriorVersionPlugged
                     self._looks[look_name][2] = plugged_look
-        self._valid = True
 
 
 class LookAsset(LookStandin):
     def retrieve_looks(self, current_project_dir):
         self._retrieve_looks_aux(current_project_dir, "look", "_operator", True)
 
+    def is_uv_up_to_date(self):
+        if len(self._uvs) == 0:
+            return True
+        dso = self._standin.dso.get()
+        match = re.match(r".*mod(?:\.v([0-9]{3}))?\.abc", dso, re.IGNORECASE)
+        if not match:
+            return False
+        return int(match.group(1)) == self._uvs[0][0]
+
+    def retrieve_uvs(self, current_project_dir):
+        assets_folder = os.path.join(current_project_dir, "assets")
+        uv_folder = os.path.join(assets_folder, self._standin_name, "abc")
+        self._uvs.clear()
+        if os.path.isdir(uv_folder):
+            for file in os.listdir(uv_folder):
+                file_path = os.path.join(uv_folder, file)
+                match = re.match(r".*mod(?:\.v([0-9]{3}))?\.abc", file, re.IGNORECASE)
+                if os.path.isfile(file_path) and match:
+                    self._uvs.append((int(match.group(1)), file_path))
+            self._uvs = sorted(self._uvs, reverse=True)
+        if len(self._uvs) == 0:
+            self._valid = False
+
+    def update_uvs(self):
+        if len(self._uvs) == 0:
+            print_warning("No mod files found for " + self.__object_name, char_filler='-')
+            return
+        self._standin.dso.set(self._uvs[0][1])
 
 class LookFur(LookStandin):
     def retrieve_looks(self, current_project_dir):
         self._retrieve_looks_aux(current_project_dir, "look_fur", "_fur", False)
+
+    def is_uv_up_to_date(self):
+        return True
+
+    def retrieve_uvs(self, current_project_dir):
+        # Nothing
+        pass

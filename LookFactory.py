@@ -30,6 +30,8 @@ class LookFactory:
 
         # Retrieve the looks
         look_obj.retrieve_looks(self.__current_project_dir)
+        look_obj.retrieve_uvs(self.__current_project_dir)
+
         if look_obj.is_valid():
             return look_obj
 

@@ -54,7 +54,7 @@ class LookLoader(QDialog):
         self.__look_factory = LookFactory(self.__current_project_dir)
 
         # UI attributes
-        self.__ui_width = 600
+        self.__ui_width = 700
         self.__ui_height = 350
         self.__ui_min_width = 500
         self.__ui_min_height = 250
@@ -143,8 +143,8 @@ class LookLoader(QDialog):
         grid_layout.addWidget(QLabel("Looks"), 0, 1, alignment=Qt.AlignCenter)
 
         # Standin Table
-        self.__ui_standin_table = QTableWidget(0, 3)
-        self.__ui_standin_table.setHorizontalHeaderLabels(["Name", "Standin Name", "Number looks"])
+        self.__ui_standin_table = QTableWidget(0, 4)
+        self.__ui_standin_table.setHorizontalHeaderLabels(["Name", "Standin Name", "Number looks", "UVs"])
         self.__ui_standin_table.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
         self.__ui_standin_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.__ui_standin_table.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -205,6 +205,18 @@ class LookLoader(QDialog):
             nb_looks_item = QTableWidgetItem(str(nb_looks))
             nb_looks_item.setTextAlignment(Qt.AlignCenter)
             self.__ui_standin_table.setItem(row_index, 2, nb_looks_item)
+
+            if standin_obj.is_uv_up_to_date():
+                up_to_date_lbl = QTableWidgetItem("Up to date")
+                up_to_date_lbl.setTextAlignment(Qt.AlignCenter)
+                self.__ui_standin_table.setItem(row_index, 3, up_to_date_lbl)
+            else:
+                update_uv_btn = QPushButton("Update")
+                update_uv_btn.setStyleSheet("margin:3px")
+                update_uv_btn.clicked.connect(standin_obj.update_uvs)
+                update_uv_btn.clicked.connect(self.__refresh_standin_table)
+                self.__ui_standin_table.setCellWidget(row_index, 3, update_uv_btn)
+
             row_index += 1
         if row_selected is not None:
             self.__ui_standin_table.selectRow(row_selected)
