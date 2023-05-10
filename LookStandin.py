@@ -49,6 +49,14 @@ class LookStandin(ABC):
     def is_valid(self):
         return self._valid
 
+    def is_looks_up_to_date(self):
+        for look_name, look_data in self._looks.items():
+            look_state = look_data[1]
+            if (look_name in ["default", "override"] and look_state == LookPresentState.NotPlugged) or \
+                    look_state == LookPresentState.AnteriorVersionPlugged:
+                return False
+        return True
+
     # Add Looks to the operators
     def add_looks(self, filepath_looks):
         for look_filepath in filepath_looks:
@@ -72,7 +80,11 @@ class LookStandin(ABC):
         for look_name, look_data in self._looks.items():
             look_filepath = look_data[0]
             look_state = look_data[1]
-            if look_state == LookPresentState.AnteriorVersionPlugged:
+            if look_name in ["default", "override"] and look_state == LookPresentState.NotPlugged:
+                include_graph = pm.createNode("aiIncludeGraph", n="aiIncludeGraph_" + self.__object_name + "_" + look_name)
+                include_graph.filename.set(look_filepath)
+                include_graph.out >> self._standin.operators[LookStandin.__get_free_operator_slot(self._standin)]
+            elif look_state == LookPresentState.AnteriorVersionPlugged:
                 include_graph = look_data[2]
                 include_graph.filename.set(look_filepath)
         pm.select(clear=True)
@@ -88,6 +100,7 @@ class LookStandin(ABC):
     @abstractmethod
     def retrieve_looks(self, current_project_dir):
         pass
+
 
     def _retrieve_looks_aux(self, current_project_dir, folder_sublook, suffix_operator, check_for_override=False):
         # Looks
@@ -162,6 +175,20 @@ class LookStandin(ABC):
 
 
 class LookAsset(LookStandin):
+    @staticmethod
+    def get_uvs(standin_name, current_project_dir):
+        assets_folder = os.path.join(current_project_dir, "assets")
+        uv_folder = os.path.join(assets_folder, standin_name, "abc")
+        uvs = []
+        if os.path.isdir(uv_folder):
+            for file in os.listdir(uv_folder):
+                file_path = os.path.join(uv_folder, file)
+                match = re.match(r".*mod(?:\.v([0-9]{3}))?\.abc", file, re.IGNORECASE)
+                if os.path.isfile(file_path) and match:
+                    uvs.append((int(match.group(1)), file_path))
+            uvs = sorted(uvs, reverse=True)
+        return uvs
+
     def retrieve_looks(self, current_project_dir):
         self._retrieve_looks_aux(current_project_dir, "look", "_operator", True)
 
@@ -175,16 +202,7 @@ class LookAsset(LookStandin):
         return int(match.group(1)) == self._uvs[0][0]
 
     def retrieve_uvs(self, current_project_dir):
-        assets_folder = os.path.join(current_project_dir, "assets")
-        uv_folder = os.path.join(assets_folder, self._standin_name, "abc")
-        self._uvs.clear()
-        if os.path.isdir(uv_folder):
-            for file in os.listdir(uv_folder):
-                file_path = os.path.join(uv_folder, file)
-                match = re.match(r".*mod(?:\.v([0-9]{3}))?\.abc", file, re.IGNORECASE)
-                if os.path.isfile(file_path) and match:
-                    self._uvs.append((int(match.group(1)), file_path))
-            self._uvs = sorted(self._uvs, reverse=True)
+        self._uvs = LookAsset.get_uvs(self._standin_name, current_project_dir)
         if len(self._uvs) == 0:
             self._valid = False
 
