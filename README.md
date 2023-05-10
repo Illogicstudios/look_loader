@@ -13,7 +13,7 @@ https://github.com/Illogicstudios/common
 
 <div align="center">
   <span>
-    <img src="https://user-images.githubusercontent.com/117286626/234493464-603be046-bf78-4b4b-8aa5-961371baec29.png" width=70%>
+    <img src="https://github.com/Illogicstudios/look_loader/assets/117286626/3b1b98b6-970f-428f-90d1-4cf77c29ef72" width=80%>
   </span>
   <p weight="bold">There is a table see the StandIn that have looks</p>
   <br/>
@@ -25,10 +25,10 @@ There is a table see the StandIn that have looks
 
 <div align="center">
   <span>
-    <img src="https://user-images.githubusercontent.com/117286626/234493728-7499a7b8-7b06-4c5f-a384-712ca330b6a8.png" width=49%>
+    <img src="https://github.com/Illogicstudios/look_loader/assets/117286626/b4a8c97c-0cf6-4c4e-8156-6eb03194c6ec" width=49%>
   </span>
   <span>
-    <img src="https://user-images.githubusercontent.com/117286626/234493805-5e2eb5ae-f452-4b41-891b-4d424f19ed27.png" width=49%>
+    <img src="https://github.com/Illogicstudios/look_loader/assets/117286626/5d2fade2-b4ac-49e1-9018-ee6463d51255" width=49%>
   </span>
   <br/>
 </div>
